@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Infra 36 周计划</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday study planner: calm, orderly, dense enough to live in for 9 months
+   IDEA a printed season training chart: one row of 36 week cells you fill in as you go
+   PICTURE the 36-week track in the sky band; each cell fills bottom-up with that week's completion
+   COLOUR sky band #4fb3e8, white ground, ink #10223a fills, orange #ff7a1a marks the current week
+   TYPE Outfit 600 for numbers and titles + Inter / Noto Sans SC for text
+   LAYOUT band: title + figures, track full width beneath; segment row; toolbar; week list. Phone: track wraps to 12 columns */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0b1726);--ink:light-dark(#10223a,#e6eef6);--muted:light-dark(#4b5e74,#9db2c7);--line:light-dark(#d8e2eb,#23364c);--panel:light-dark(#f2f7fb,#10233a);--band:light-dark(#4fb3e8,#123b5e);--bandink:light-dark(#0c1d33,#eaf6ff);--fill:light-dark(#10223a,#8fd3ff);--empty:light-dark(rgba(255,255,255,.62),rgba(255,255,255,.1));--accent:#ff7a1a;--tint:light-dark(#fff1e6,#2a1d12);--link:light-dark(#0b5f96,#8fd3ff)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;overflow-x:clip}
+a{color:var(--link);text-underline-offset:2px}
+button{font:inherit;color:inherit}
+.band{padding-block:clamp(24px,4vw,44px);padding-inline:max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--band);color:var(--bandink)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end}
+h1{font:600 clamp(32px,5vw,48px)/1.05 Outfit,"Noto Sans SC",sans-serif;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.lede{margin:0;max-width:64ch}
+.figs{display:flex;gap:28px}
+.figs div{display:grid;gap:4px}
+.figs b{font:600 clamp(32px,4vw,44px)/1 Outfit,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.figs span{font-size:14px}
+.track{display:grid;grid-template-columns:repeat(36,minmax(0,1fr));gap:4px;margin-top:28px}
+.tl{grid-row:1;font-size:13px;font-weight:600;border-bottom:2px solid currentColor;padding-bottom:2px;margin:0 2px 4px;white-space:nowrap;overflow:hidden}
+.cell{grid-row:2;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;gap:4px;border-radius:4px}
+.cell .num{font:600 13px/1 Outfit,sans-serif;text-align:center;letter-spacing:-.03em}
+.cell .bar{position:relative;display:block;height:56px;background:var(--empty);border-radius:3px;overflow:hidden}
+.cell .bar i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--fill);transition:height .45s ease}
+.cell.cur .bar{outline:3px solid var(--accent);outline-offset:1px}
+.cell:focus-visible{outline:2px solid var(--bandink);outline-offset:3px}
+.legend{margin:14px 0 0;font-size:14px}
+.segs{padding-block:20px 8px}
+.sg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.sc{appearance:none;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;display:grid;gap:6px;align-content:start}
+.sc[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sc b{font:600 18px/1.2 Outfit,"Noto Sans SC",sans-serif}
+.sc small{font-size:13px;color:var(--muted);line-height:1.45}
+.meter{display:block;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--fill);transition:width .45s ease}
+.bar2{padding:10px max(5vw,16px);background:var(--bg);border-bottom:1px solid var(--line);z-index:5}
+.bar2 .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.btn{appearance:none;font-size:15px;background:var(--panel);border:1px solid var(--line);border-radius:8px;min-height:42px;padding:0 14px;cursor:pointer;white-space:nowrap}
+.btn[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:hover{border-color:var(--ink)}
+.grp{display:inline-flex}
+.grp .btn:first-child{border-radius:8px 0 0 8px}
+.grp .btn:last-child{border-radius:0 8px 8px 0;margin-left:-1px}
+.status{margin-left:auto;font-size:13px;color:var(--muted)}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main.band{padding-top:20px}
+.list{display:grid;gap:12px}
+details.wk{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+details.wk.cur{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+details.wk.opt{border-style:dashed}
+.wk summary{list-style:none;display:grid;grid-template-columns:4.4em minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 18px;cursor:pointer;min-height:68px}
+.wk summary::-webkit-details-marker{display:none}
+.wn{font:600 34px/1 Outfit,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wn small{display:block;font:500 13px/1.3 Inter,"Noto Sans SC",sans-serif;color:var(--muted);letter-spacing:0;margin-top:5px}
+.wt{font:600 19px/1.3 Outfit,"Noto Sans SC",sans-serif;margin:0}
+.wm{font-size:14px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;font-size:13px;font-weight:600;color:#7a3300;background:#ffd9bd;border-radius:999px;padding:0 8px;margin-left:8px;vertical-align:2px}
+.wp{display:grid;justify-items:end;gap:6px;font-size:14px;color:var(--muted);white-space:nowrap}
+.wp .meter{width:96px}
+.wk.done .wn{color:var(--muted)}
+.wk.done .pt{color:var(--ink);font-weight:600}
+.body{padding:0 18px 20px calc(34px + 4.4em);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:8px 32px}
+.body .full{grid-column:1/-1}
+.h{font:600 14px/1.3 Inter,"Noto Sans SC",sans-serif;color:var(--muted);margin:6px 0 2px}
+.it{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.ck{display:grid;place-items:center;width:44px;height:44px;margin:-10px 0 -10px -12px;flex:none;cursor:pointer}
+.ck input{width:20px;height:20px;margin:0;accent-color:var(--fill);cursor:pointer}
+.tx{flex:1}
+.tx small{display:block;font-size:13px;color:var(--muted)}
+.it.on .tx>a,.it.on .tt b,.it.on .gtx{color:var(--muted);text-decoration:line-through}
+.tt{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.mini{appearance:none;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:999px;min-height:40px;padding:0 14px;cursor:pointer;white-space:nowrap}
+.mini:hover{border-color:var(--ink)}
+.goal,.dn,.hint{margin:8px 0 2px}
+.lb{font-weight:600;margin-right:8px}
+.tx ol,.tx ul{margin:4px 0 0;padding-left:1.4em}
+.tx li{margin:3px 0}
+.hint{color:var(--muted)}
+.foot{grid-column:1/-1;border-top:1px solid var(--line);margin-top:8px;padding-top:12px;display:grid;gap:10px}
+.foot p{margin:0}
+.bridge{background:var(--tint);border-radius:8px;padding:10px 14px}
+.gate{background:var(--panel);border-radius:8px;padding:6px 14px 2px}
+.gate .it:first-of-type{border-top:0}
+.nl{font-weight:600;font-size:14px}
+textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;resize:vertical;min-height:84px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:600}
+td.n,td.pc{white-space:nowrap;font-variant-numeric:tabular-nums}
+td.n{font:600 18px/1.3 Outfit,sans-serif}
+tr.cur td{background:var(--tint)}
+tr.isdone td{color:var(--muted)}
+.lnk{appearance:none;border:0;background:none;padding:0;color:var(--link);text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.note{font-size:13px;color:var(--muted);max-width:80ch;margin:28px 0 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);width:min(720px,calc(100vw - 32px));padding:18px}
+dialog textarea{min-height:300px;font-size:14px}
+dialog::backdrop{background:rgba(5,15,30,.5)}
+.dlgb{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.err{padding:20px;border:1px solid var(--line);border-radius:12px}
+@media(min-width:900px){.bar2{position:sticky;top:0}html{scroll-padding-top:84px}}
+@media(max-width:899px){.body{grid-template-columns:minmax(0,1fr);padding:0 16px 18px}.wk summary{grid-template-columns:3.4em minmax(0,1fr);padding:14px 16px}.wp{grid-column:2;justify-items:start;grid-auto-flow:column;align-items:center;gap:10px}.sg{grid-template-columns:repeat(5,minmax(0,1fr))}.sc small.d{display:none}}
+@media(max-width:599px){.head{grid-template-columns:minmax(0,1fr)}.figs{gap:22px}.track{grid-template-columns:repeat(12,minmax(0,1fr));gap:5px}.tl{display:none}.cell{grid-row:auto}.cell .bar{height:38px}.sg{grid-template-columns:minmax(0,1fr);gap:8px}.sc{grid-template-columns:minmax(0,1fr) 7em;align-items:center;padding:10px 14px}.sc .meter{grid-column:2;grid-row:1/3}.sc small.sp{grid-column:1}.status{margin-left:0;width:100%}table{font-size:13px}th,td{padding:6px 4px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flex;justify-content:space-between;gap:12px;border:0}.stack td::before{content:attr(data-l);color:var(--muted);flex:none}}
+@media(prefers-reduced-motion:reduce){.cell .bar i,.meter i,.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="band top">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>AI Infra 36 周计划</h1>
+        <p class="lede">从 Linux 和 PyTorch 入门，一路做到算子、分布式训练、推理服务和集群平台。每周列出要看的课程和要做的实践；每个实践任务都写成了完整说明，点「复制给 Muse」就能让它带你一步步做。</p>
+      </div>
+      <div class="figs" aria-live="polite">
+        <div><b id="fCur">1</b><span>当前周</span></div>
+        <div><b id="fWeeks">0</b><span>周已完成</span></div>
+        <div><b id="fPct">0%</b><span>总进度</span></div>
+      </div>
+    </div>
+    <div class="track" id="track" aria-label="36 周进度"></div>
+    <p class="legend">每格是一周，深色部分是该周完成的比例，橙框是当前周。点任意一格跳到那一周。</p>
+  </div>
+</header>
+
+<section class="band segs" aria-label="阶段">
+  <div class="wrap sg" id="segs"></div>
+</section>
+
+<div class="bar2">
+  <div class="wrap">
+    <div class="grp" role="group" aria-label="视图">
+      <button class="btn" id="vList" type="button" aria-pressed="true">逐周</button>
+      <button class="btn" id="vTable" type="button" aria-pressed="false">总表</button>
+    </div>
+    <button class="btn" id="hideDone" type="button" aria-pressed="false">隐藏已完成的周</button>
+    <button class="btn" id="jump" type="button">跳到当前周</button>
+    <button class="btn" id="clearSeg" type="button" hidden>显示全部阶段</button>
+    <button class="btn" id="dl" type="button">复制全部（Markdown）</button>
+    <button class="btn" id="exp" type="button">导出进度</button>
+    <button class="btn" id="imp" type="button">导入进度</button>
+    <input type="file" id="impFile" accept=".json,application/json" hidden>
+    <span class="status" id="status" role="status">正在加载…</span>
+  </div>
+</div>
+
+<main class="band">
+  <div class="wrap">
+    <div class="list" id="list"><p class="err">正在加载计划…</p></div>
+    <div id="tableView" hidden>
+      <div class="scroll">
+        <table class="stack">
+          <thead><tr><th>周</th><th>阶段</th><th>主题</th><th>课程</th><th>进度</th><th>产出</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note">课程信息按 2025–2026 学年的版本整理，2026 年 11 月核对过链接；各课程每年改版，以官网为准。实践任务的说明是按课程作业要求改写的等效描述，不是原作业文本。</p>
+    <p class="note" id="saveNote">勾选和笔记会保存到你的账户；无法连接时先保存在当前浏览器。「导出进度」可以把勾选和笔记存成一个文件备份，「导入进度」会把文件里的内容合并进来。</p>
+  </div>
+</main>
+
+<dialog id="dlg">
+  <p style="margin:0 0 8px">自动复制没有成功，请手动全选下面的内容复制：</p>
+  <textarea id="dlgT" readonly></textarea>
+  <div class="dlgb"><button class="btn" id="dlgClose" type="button">关闭</button></div>
+</dialog>
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS='aiinfra36-progress-v1';
+let P=null,state={c:{},notes:{}},docRef=null,saving=false,dirty=false,downloads=null,segFilter=null,hideDone=false,curKey=null,noteTimer=0,cloud='local';
+const keyOf=w=>w.k||('w'+w.n);
+const segOf=w=>P.segments.find(s=>s.id===w.seg);
+const label=w=>w.opt?'选':String(w.n);
+function items(w){const k=keyOf(w),a=[];(w.theory||[]).forEach((_,i)=>a.push(k+'-t'+i));(w.tasks||[]).forEach((_,i)=>a.push(k+'-p'+i));(w.gate||[]).forEach((_,i)=>a.push(k+'-g'+i));return a}
+function setStatus(t){$('#status').textContent=t}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
+function loadLocal(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&s.c)state={c:s.c,notes:s.notes||{}}}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+function persist(){
+  saveLocal();
+  if(!docRef){setStatus(cloud==='offline'?'暂时连不上账户，进度先存在此浏览器':'进度保存在此浏览器');return}
+  if(saving){dirty=true;return}
+  saving=true;setStatus('保存中…');
+  docRef.set({c:state.c,notes:state.notes,v:1}).then(()=>setStatus('已保存到你的账户')).catch(()=>setStatus('同步失败，已先存在此浏览器')).finally(()=>{saving=false;if(dirty){dirty=false;persist()}});
+}
+function row(id,html,note,cls){return `<div class="it" data-row="${id}"><label class="ck"><input type="checkbox" id="c-${id}" data-k="${id}"><span class="sr">标记完成</span></label><div class="tx${cls?' '+cls:''}">${html}${note?`<small>${esc(note)}</small>`:''}</div></div>`}
+function taskHTML(w,t,i){const id=keyOf(w)+'-p'+i;return `<div class="it" data-row="${id}"><label class="ck"><input type="checkbox" id="c-${id}" data-k="${id}"><span class="sr">标记完成</span></label><div class="tx"><div class="tt"><b>${esc(t.t)}</b><button class="mini" type="button" data-copy="${keyOf(w)}|${i}">复制给 Muse</button></div><p class="goal"><span class="lb">目标</span>${esc(t.goal)}</p><ol>${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><p class="dn"><span class="lb">验收</span></p><ul>${(t.done||[]).map(d=>`<li>${esc(d)}</li>`).join('')}</ul>${t.hint?`<p class="hint"><span class="lb">提示</span>${esc(t.hint)}</p>`:''}</div></div>`}
+function weekHTML(w){
+  const k=keyOf(w),s=segOf(w);
+  const th=(w.theory||[]).map((t,i)=>row(k+'-t'+i,t.u&&/^https:\/\//.test(t.u)?`<a href="${esc(t.u)}" target="_blank" rel="noopener">${esc(t.t)}</a>`:esc(t.t),t.d)).join('');
+  const tk=(w.tasks||[]).map((t,i)=>taskHTML(w,t,i)).join('');
+  const gate=w.gate?`<div class="gate"><p class="h">进入主线前自测：四项都能做到就开始第 9 周</p>${w.gate.map((g,i)=>row(k+'-g'+i,esc(g),'','gtx')).join('')}</div>`:'';
+  const meta=[w.src,w.hours?('每周约 '+w.hours+' 小时'):''].filter(Boolean).join(' · ');
+  return `<details class="wk${w.opt?' opt':''}" id="${k}" data-seg="${esc(w.seg)}"><summary><div class="wn">${esc(label(w))}<small>${esc(s.short)}</small></div><div><h3 class="wt">${esc(w.title)}<span class="tag" hidden>本周</span></h3><div class="wm">${esc(meta)}</div></div><div class="wp"><span class="pt"></span><span class="meter"><i></i></span></div></summary><div class="body">${th?`<section><p class="h">理论 · 看什么</p>${th}</section>`:''}<section${th?'':' class="full"'}><p class="h">实践 · 做什么</p>${tk}</section><div class="foot">${w.out?`<p><span class="lb">产出</span>${esc(w.out)}</p>`:''}${w.gpu?`<p><span class="lb">算力</span>${esc(w.gpu)}</p>`:''}${gate}${w.bridge?`<p class="bridge"><span class="lb">带着这个问题进入下一段</span>${esc(w.bridge)}</p>`:''}<label class="nl" for="n-${k}">笔记 / 性能记录</label><textarea id="n-${k}" data-note="${k}" rows="3" placeholder="记录本周的数据、卡住的地方和想法"></textarea></div></div></details>`;
+}
+function render(){
+  const S=P.segments,W=P.weeks;
+  $('#track').innerHTML=S.map(s=>`<div class="tl" style="grid-column:${s.from}/${s.to+1}">${esc(s.short)}</div>`).join('')+W.filter(w=>!w.opt).map(w=>`<button class="cell" type="button" data-go="${keyOf(w)}" aria-label="第 ${w.n} 周：${esc(w.title)}"><span class="num">${w.n}</span><span class="bar"><i></i></span></button>`).join('');
+  $('#segs').innerHTML=S.map(s=>`<button class="sc" type="button" data-seg="${esc(s.id)}" aria-pressed="false"><b>${esc(s.name)}</b><small>第 ${s.from}–${s.to} 周</small><small class="d">${esc(s.desc)}</small><span class="meter"><i></i></span><small class="sp"></small></button>`).join('');
+  $('#list').innerHTML=W.map(weekHTML).join('');
+  $('#tbody').innerHTML=W.map(w=>`<tr data-k="${keyOf(w)}"><td class="n" data-l="周">${esc(label(w))}</td><td data-l="阶段">${esc(segOf(w).short)}</td><td data-l="主题"><button class="lnk" type="button" data-go="${keyOf(w)}">${esc(w.title)}</button></td><td data-l="课程">${esc(w.src||'')}</td><td class="pc" data-l="进度"></td><td data-l="产出">${esc(w.out||'')}</td></tr>`).join('');
+}
+function applyState(){
+  document.querySelectorAll('input[data-k]').forEach(i=>{i.checked=!!state.c[i.dataset.k]});
+  document.querySelectorAll('textarea[data-note]').forEach(t=>{if(document.activeElement!==t)t.value=state.notes[t.dataset.note]||''});
+  update();
+}
+function update(){
+  const W=P.weeks;let cur=null,done=0,tot=0,got=0;
+  W.forEach(w=>{const a=items(w),d=a.filter(x=>state.c[x]).length;w._t=a.length;w._d=d;w._p=a.length?d/a.length:0;if(!w.opt){tot+=a.length;got+=d;if(w._p>=1)done++;else if(!cur)cur=w}});
+  curKey=cur?keyOf(cur):null;
+  document.querySelectorAll('[data-row]').forEach(r=>r.classList.toggle('on',!!state.c[r.dataset.row]));
+  W.forEach(w=>{
+    const k=keyOf(w),el=document.getElementById(k),pct=Math.round(w._p*100)+'%',isCur=k===curKey,isDone=w._p>=1;
+    if(el){el.classList.toggle('done',isDone);el.classList.toggle('cur',isCur);el.querySelector('.tag').hidden=!isCur;el.querySelector('.pt').textContent=isDone?'已完成':`${w._d} / ${w._t} 项`;el.querySelector('.wp .meter i').style.width=pct}
+    const c=document.querySelector(`.cell[data-go="${k}"]`);if(c){c.querySelector('i').style.height=pct;c.classList.toggle('cur',isCur)}
+    const tr=document.querySelector(`tr[data-k="${k}"]`);if(tr){tr.querySelector('.pc').textContent=isDone?'已完成':`${w._d} / ${w._t}`;tr.classList.toggle('cur',isCur);tr.classList.toggle('isdone',isDone)}
+  });
+  $('#fCur').textContent=cur?cur.n:'完成';$('#fWeeks').textContent=done;$('#fPct').textContent=Math.round(tot?got/tot*100:0)+'%';
+  P.segments.forEach(s=>{const ws=W.filter(w=>!w.opt&&w.seg===s.id),t=ws.reduce((a,w)=>a+w._t,0),d=ws.reduce((a,w)=>a+w._d,0),b=document.querySelector(`.sc[data-seg="${s.id}"]`);if(!b)return;b.querySelector('.meter i').style.width=(t?d/t*100:0)+'%';b.querySelector('.sp').textContent=`${d} / ${t} 项`});
+  filter();
+}
+function filter(){
+  P.weeks.forEach(w=>{const k=keyOf(w),hide=(segFilter&&w.seg!==segFilter)||(hideDone&&w._p>=1);const el=document.getElementById(k);if(el)el.hidden=!!hide;const tr=document.querySelector(`tr[data-k="${k}"]`);if(tr)tr.hidden=!!hide});
+  document.querySelectorAll('.sc').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.seg===segFilter)));
+  $('#clearSeg').hidden=!segFilter;
+}
+function setView(table){$('#vList').setAttribute('aria-pressed',String(!table));$('#vTable').setAttribute('aria-pressed',String(table));$('#list').hidden=table;$('#tableView').hidden=!table}
+function goWeek(k){
+  if(!k)return;setView(false);const el=document.getElementById(k);if(!el)return;
+  if(el.hidden){segFilter=null;hideDone=false;$('#hideDone').setAttribute('aria-pressed','false');filter()}
+  el.open=true;const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;el.scrollIntoView({behavior:rm?'auto':'smooth',block:'start'});
+}
+function promptFor(w,t){
+  const L=[`你是我的 AI Infra 学习教练。我在按一份 36 周的学习计划自学，现在是第 ${w.opt?'12 周之后的可选':w.n} 周「${w.title}」。请带我上手完成下面这个实践任务。`,'','带我的方式：','1. 先问清我的环境（操作系统、有没有 GPU 及型号、Python 和 PyTorch 版本）和我已经做到哪一步。','2. 一次只推进一个步骤：先说明这一步做什么、为什么，再让我自己动手。','3. 我卡住时先给提示和思路，不要直接给完整代码；我写完后帮我检查并指出问题。','4. 全部步骤完成后，按验收标准逐条和我确认。','',`【任务】${t.t}`,`【目标】${t.goal}`,'【步骤】',...t.steps.map((s,i)=>`${i+1}. ${s}`),'【验收标准】',...(t.done||[]).map(d=>`- ${d}`)];
+  if(t.hint)L.push(`【提示】${t.hint}`);
+  if(w.theory&&w.theory.length)L.push('【本周参考资料】',...w.theory.map(x=>`- ${x.t}${x.u?'：'+x.u:''}`));
+  return L.join('\n');
+}
+function markdown(){
+  const L=['# AI Infra 36 周计划',''];
+  P.segments.forEach(s=>{L.push(`## ${s.name}（第 ${s.from}–${s.to} 周）`,'',s.desc,'');P.weeks.filter(w=>w.seg===s.id).forEach(w=>{const k=keyOf(w),c=id=>state.c[id]?'x':' ';L.push(`### ${w.opt?'可选':'第 '+w.n+' 周'} · ${w.title}`,'');if(w.src||w.hours)L.push(`${[w.src,w.hours?'每周约 '+w.hours+' 小时':''].filter(Boolean).join(' · ')}`,'');if(w.theory&&w.theory.length){L.push('**理论**','');w.theory.forEach((t,i)=>L.push(`- [${c(k+'-t'+i)}] ${t.u?`[${t.t}](${t.u})`:t.t}${t.d?`（${t.d}）`:''}`));L.push('')}L.push('**实践**','');w.tasks.forEach((t,i)=>{L.push(`- [${c(k+'-p'+i)}] **${t.t}**`,`  - 目标：${t.goal}`,'  - 步骤：',...t.steps.map((x,j)=>`    ${j+1}. ${x}`),'  - 验收：',...(t.done||[]).map(x=>`    - ${x}`));if(t.hint)L.push(`  - 提示：${t.hint}`)});L.push('');if(w.gate){L.push('**进入主线前自测**','');w.gate.forEach((g,i)=>L.push(`- [${c(k+'-g'+i)}] ${g}`));L.push('')}if(w.out)L.push(`**产出**：${w.out}`,'');if(w.gpu)L.push(`**算力**：${w.gpu}`,'');if(w.bridge)L.push(`**带着这个问题进入下一段**：${w.bridge}`,'');if(state.notes[k])L.push('**我的笔记**','',state.notes[k],'')})});
+  return L.join('\n');
+}
+function openDlg(text){const d=$('#dlg');$('#dlgT').value=text;try{d.showModal()}catch(e){d.setAttribute('open','')}const t=$('#dlgT');t.focus();t.select()}
+function copyText(text,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toast(msg||'已复制')).catch(()=>openDlg(text))}else openDlg(text)}
+let standalone=false;
+function saveFile(name,text,mime){
+  if(downloads)return downloads.save({filename:name,data:text});
+  if(standalone){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);return Promise.resolve()}
+  return Promise.reject({code:'unavailable'});
+}
+function offerFile(name,text,mime,okMsg){saveFile(name,text,mime).then(()=>toast(okMsg)).catch(err=>{if(err&&err.code==='declined')return;copyText(text,'下载不可用，已改为复制到剪贴板')})}
+function exportProgress(){const d=new Date(),day=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;offerFile(`ai-infra-progress-${day}.json`,JSON.stringify({app:'aiinfra36',v:1,exported:d.toISOString(),c:state.c,notes:state.notes},null,2),'application/json','已导出进度文件')}
+function importProgress(text){
+  let o;try{o=JSON.parse(text)}catch(e){toast('文件不是有效的 JSON');return}
+  if(!o||typeof o!=='object'||!o.c||typeof o.c!=='object'){toast('这不是本计划导出的进度文件');return}
+  let added=0;
+  Object.keys(o.c).forEach(k=>{if(/^w[0-9x]+-[tpg][0-9]+$/.test(k)&&o.c[k]&&!state.c[k]){state.c[k]=1;added++}});
+  const ns=o.notes&&typeof o.notes==='object'?o.notes:{};
+  Object.keys(ns).forEach(k=>{const v=ns[k];if(!/^w[0-9x]+$/.test(k)||typeof v!=='string'||!v.trim())return;const mine=state.notes[k]||'';if(!mine.trim())state.notes[k]=v.slice(0,20000);else if(mine!==v&&!mine.includes(v))state.notes[k]=(mine+'\n\n—— 导入的笔记 ——\n'+v).slice(0,40000)});
+  applyState();persist();toast(`已导入：新增 ${added} 项勾选，笔记已合并`);
+}
+function bind(){
+  document.addEventListener('change',e=>{const i=e.target.closest('input[data-k]');if(!i)return;if(i.checked)state.c[i.dataset.k]=1;else delete state.c[i.dataset.k];const was=curKey;update();persist();if(curKey&&curKey!==was){const n=document.getElementById(curKey);if(n){n.open=true;toast('已展开当前周：第 '+label(P.weeks.find(w=>keyOf(w)===curKey))+' 周')}}});
+  document.addEventListener('input',e=>{const t=e.target.closest('textarea[data-note]');if(!t)return;const v=t.value;if(v.trim())state.notes[t.dataset.note]=v;else delete state.notes[t.dataset.note];saveLocal();clearTimeout(noteTimer);noteTimer=setTimeout(persist,1200)});
+  document.addEventListener('click',e=>{
+    const g=e.target.closest('[data-go]');if(g){goWeek(g.dataset.go);return}
+    const cp=e.target.closest('[data-copy]');if(cp){const [k,i]=cp.dataset.copy.split('|');const w=P.weeks.find(x=>keyOf(x)===k);if(w)copyText(promptFor(w,w.tasks[+i]),'已复制，粘贴给 Muse 即可');return}
+    const sc=e.target.closest('.sc');if(sc){segFilter=segFilter===sc.dataset.seg?null:sc.dataset.seg;filter();return}
+  });
+  $('#vList').addEventListener('click',()=>setView(false));
+  $('#vTable').addEventListener('click',()=>setView(true));
+  $('#hideDone').addEventListener('click',()=>{hideDone=!hideDone;$('#hideDone').setAttribute('aria-pressed',String(hideDone));filter()});
+  $('#clearSeg').addEventListener('click',()=>{segFilter=null;filter()});
+  $('#jump').addEventListener('click',()=>goWeek(curKey||keyOf(P.weeks[P.weeks.length-1])));
+  $('#dl').addEventListener('click',()=>{const md=markdown();if(downloads||standalone)offerFile('ai-infra-36-weeks.md',md,'text/markdown','已保存 Markdown 文件');else copyText(md,'已复制全部计划（Markdown）')});
+  $('#exp').addEventListener('click',exportProgress);
+  $('#imp').addEventListener('click',()=>$('#impFile').click());
+  $('#impFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;f.text().then(importProgress).catch(()=>toast('读取文件失败'));e.target.value=''});
+  $('#dlgClose').addEventListener('click',()=>{const d=$('#dlg');try{d.close()}catch(e){d.removeAttribute('open')}});
+}
+async function cloudInit(){
+  const cl=window.claude;
+  if(!cl||typeof cl.use!=='function'){setStatus('进度保存在此浏览器');return}
+  try{
+    const [d,u,dl]=await Promise.all([cl.use('db'),cl.use('user'),cl.use('downloads')]);
+    if(dl){downloads=dl;$('#dl').textContent='下载全部（Markdown）'}
+    if(!d||!u){setStatus('进度保存在此浏览器');return}
+    const id=await u.id();
+    if(!id){setStatus('未登录：进度保存在此浏览器');return}
+    const ref=d.doc('data/users/'+id+'/progress');
+    const tm=setTimeout(()=>{cloud='offline';setStatus('暂时连不上账户，进度先存在此浏览器')},10000);
+    const snap=await ref.get();clearTimeout(tm);cloud='db';docRef=ref;
+    if(snap.exists){const v=snap.data()||{};state={c:Object.assign({},v.c||{}),notes:Object.assign({},v.notes||{})};saveLocal();applyState();const el=curKey&&document.getElementById(curKey);if(el)el.open=true;setStatus('已从你的账户读取进度')}
+    else if(Object.keys(state.c).length||Object.keys(state.notes).length)persist();
+    else setStatus('勾选会自动保存到你的账户');
+  }catch(e){setStatus(docRef?'同步失败，已先存在此浏览器':'进度保存在此浏览器')}
+}
+function start(){
+  loadLocal();render();bind();applyState();
+  const el=curKey&&document.getElementById(curKey);if(el)el.open=true;
+  standalone=!(window.claude&&typeof window.claude.use==='function');
+  if(standalone){$('#dl').textContent='下载全部（Markdown）';$('#saveNote').textContent='勾选和笔记保存在当前浏览器里。换设备或清理浏览器数据之前，先点「导出进度」存一个备份文件；在新设备上点「导入进度」选这个文件，内容会合并进来。';setStatus('进度保存在此浏览器，记得定期导出备份');return}
+  setStatus('进度保存在此浏览器');cloudInit();
+}
+fetch('plan.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(p=>{P=p;start()}).catch(()=>{$('#list').innerHTML='<p class="err">计划数据加载失败，请刷新页面重试。</p>';setStatus('')});
+}
+</script>
+</body>
+</html>

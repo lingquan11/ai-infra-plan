@@ -1,0 +1,420 @@
+{
+"segments":[
+{"id":"prep","name":"预备段","short":"预备","from":1,"to":8,"desc":"Linux、PyTorch、Transformer 入门"},
+{"id":"train","name":"训练主线","short":"训练","from":9,"to":21,"desc":"CS336 作业 1、2：一个模型从手写到分布式"},
+{"id":"infer","name":"推理与服务","short":"推理","from":22,"to":29,"desc":"11-868 课件 + 给自己的模型写推理引擎"},
+{"id":"cluster","name":"集群与平台","short":"集群","from":30,"to":34,"desc":"ZOMI AIInfra：通信、存储、调度、监控"},
+{"id":"cap","name":"毕业项目","short":"毕业","from":35,"to":36,"desc":"技术报告 + 第一个开源 PR"}
+],
+"weeks":[
+{"n":1,"seg":"prep","title":"Linux 基础：终端与 shell","src":"MIT Missing Semester","hours":"10–12",
+"theory":[
+{"t":"Missing Semester：课程概览与 shell、shell 工具与脚本、编辑器（vim）","u":"https://missing.csail.mit.edu/"},
+{"t":"中文版：计算机教育中缺失的一课","u":"https://missing-semester-cn.github.io/","d":"同一课程的中文翻译"},
+{"t":"安装 WSL2（Windows 用户）","u":"https://learn.microsoft.com/windows/wsl/install"}
+],
+"tasks":[
+{"t":"搭建 Linux 环境并熟悉文件操作","goal":"拥有一个日常可用的 Linux 终端，不靠图形界面完成常见文件操作。","steps":["Windows 安装 WSL2 + Ubuntu；macOS 可先用自带终端练习，另准备一个 Linux 云主机或虚拟机","理解目录结构：/、~、/etc、/tmp、/usr，以及绝对路径和相对路径","用 ls、cd、pwd、mkdir、cp、mv、rm、cat、less、head、tail 完成一组文件整理练习","用 find 按名称和大小找文件，用 grep 在文件中搜索文本，用管道 | 组合命令","理解文件权限 rwx、chmod、sudo，用 apt 安装一个软件（如 htop）"],"done":["不用图形界面完成：建目录、移动文件、找到指定文件、查看日志末尾 20 行","能解释 ls -l 输出中每一列的含义"],"hint":"遇到不认识的命令，先用 man 命令名 或 命令名 --help 自己查。"},
+{"t":"写第一个 bash 脚本并学会 vim","goal":"能用脚本把重复操作自动化，能在服务器上用 vim 改文件。","steps":["运行 vimtutor，完成全部练习","写脚本 count_ext.sh：接收一个目录参数，统计其中各扩展名的文件数量，按数量从多到少输出","脚本中用到变量、if 判断（目录不存在时报错退出）、find、sort、uniq -c","chmod +x 后直接运行；把脚本放进 ~/bin 并加入 PATH，理解环境变量和 ~/.bashrc"],"done":["对不存在的目录给出错误提示并返回非 0 退出码","在任意目录下都能直接用 count_ext.sh 调用"],"hint":"echo $? 可以查看上一条命令的退出码。"}
+],
+"out":"可用的终端环境 + 第一个 bash 脚本"},
+
+{"n":2,"seg":"prep","title":"Linux 进阶：远程、Git 与主线仓库","src":"MIT Missing Semester","hours":"10–12",
+"theory":[
+{"t":"Missing Semester：数据处理、命令行环境、版本控制（Git）、调试与性能分析","u":"https://missing.csail.mit.edu/"},
+{"t":"Pro Git 中文版（前三章）","u":"https://git-scm.com/book/zh/v2"}
+],
+"tasks":[
+{"t":"ssh、tmux 与资源查看","goal":"能远程登录服务器，让任务在断开连接后继续运行。","steps":["用 ssh-keygen 生成密钥，用密钥登录一台远程机器（云主机，或在 WSL 里开 sshd 练习）","在 ~/.ssh/config 中给机器配别名，之后用 ssh 别名 登录","用 scp 或 rsync 双向传文件","tmux：新建会话、分屏、detach 后重新 attach；在里面运行一个每秒打印时间的脚本，断开 ssh 再连回，确认仍在运行","用 htop、free -h、df -h、du -sh 查看资源；有 GPU 时用 nvidia-smi"],"done":["断开 ssh 再连上，tmux 中的任务仍在运行","能用一条 rsync 命令把本地目录同步到服务器"],"hint":"tmux 的前缀键默认是 Ctrl-b，按完前缀再按 d 就是 detach。"},
+{"t":"Python 环境与主线仓库","goal":"建好后面 34 周都在用的代码仓库和性能日志。","steps":["安装 uv（或 conda），为本计划建一个虚拟环境","在 GitHub 新建仓库（例如 ai-infra-journey），目录：notes/、labs/、perf-log.md","练习 git 基本流程：add、commit、push、branch、merge、log、diff","写 .gitignore，排除数据集、checkpoint 和虚拟环境","在 perf-log.md 写好表头：日期 | 改动 | 硬件 | tokens/s | 显存峰值 | MFU | 备注"],"done":["仓库已推送到 GitHub，能在另一台机器 clone 下来","perf-log.md 表头已就位"],"hint":"uv 文档：https://docs.astral.sh/uv/"}
+],
+"out":"主线仓库 + 性能日志模板"},
+
+{"n":3,"seg":"prep","title":"自动微分与 PyTorch 基础","src":"Karpathy Zero to Hero 第 1 集","hours":"12–15",
+"theory":[
+{"t":"Karpathy：building micrograd（从零讲反向传播）","u":"https://youtu.be/VMj-3S1tku0"},
+{"t":"PyTorch 官方教程 Learn the Basics","u":"https://docs.pytorch.org/tutorials/beginner/basics/intro.html"},
+{"t":"《动手学深度学习》第 2 章 预备知识","u":"https://zh.d2l.ai/chapter_preliminaries/index.html","d":"中文"}
+],
+"tasks":[
+{"t":"手写 micrograd","goal":"亲手实现一个最小的自动微分引擎，理解计算图和反向传播。","steps":["实现 Value 类：保存数值 data、梯度 grad、子节点和产生它的运算","支持 +、-、*、/、**、exp、tanh、relu，为每种运算写出计算局部梯度的 _backward 函数","用拓扑排序实现 backward()：从输出开始，按链式法则把梯度传回所有节点","在 Value 之上搭 Neuron、Layer、MLP，用梯度下降拟合一个 4 个样本的小数据集","对同一个表达式用 PyTorch 计算梯度，与自己的结果逐个比对"],"done":["梯度与 PyTorch 一致（误差小于 1e-6）","训练过程中 loss 持续下降"],"hint":"同一个节点被用到多次时，梯度要累加（+=），不能覆盖。"},
+{"t":"PyTorch 训练循环","goal":"能不看资料写出完整的 PyTorch 训练流程。","steps":["练习张量的创建、形状变换、广播、索引，以及 .to(device)","用 Dataset 和 DataLoader 读取 FashionMNIST","用 nn.Module 写一个两层 MLP","写训练循环：前向、计算 loss、optimizer.zero_grad()、loss.backward()、optimizer.step()","每个 epoch 结束在测试集上计算准确率","用 torch.save / torch.load 保存并恢复模型和优化器状态，从中断处继续训练"],"done":["测试准确率超过 85%","合上教程，10 分钟内重写出训练循环"]}
+],
+"out":"micrograd + FashionMNIST 分类器"},
+
+{"n":4,"seg":"prep","title":"语言模型入门：bigram 与 MLP","src":"Karpathy makemore 第 1–2 集","hours":"10–12",
+"theory":[
+{"t":"Karpathy：building makemore（bigram 语言模型）","u":"https://youtu.be/PaCmpygFfXo"},
+{"t":"Karpathy：makemore Part 2: MLP","u":"https://youtu.be/TCH_1BHY58I"},
+{"t":"3Blue1Brown 神经网络系列（前 4 章）","u":"https://www.3blue1brown.com/topics/neural-networks"}
+],
+"tasks":[
+{"t":"bigram 字符语言模型","goal":"理解语言模型就是在预测下一个 token 的概率分布。","steps":["下载 makemore 仓库中的 names.txt（约 3 万个英文名）","统计所有相邻字符对的出现次数，归一化成概率表，从中采样生成新名字","计算整个数据集的平均负对数似然（NLL）作为 loss","改成神经网络版本：字符 one-hot 乘以权重矩阵 W，softmax 得到概率，用梯度下降最小化 NLL","比较两种方法的 loss"],"done":["神经网络版的 loss 接近计数法的 loss","能生成看起来像名字的字符串"]},
+{"t":"MLP 字符语言模型","goal":"用嵌入向量和隐藏层，让模型看到更长的上下文。","steps":["用前 3 个字符预测下一个字符，构造训练样本","实现嵌入表 C、tanh 隐藏层和输出层，手写前向","mini-batch 训练，并做学习率搜索（按指数间隔试一遍，看 loss 曲线）","把数据分成训练、验证、测试三份，观察过拟合","把二维嵌入画出来，看看哪些字符聚在一起"],"done":["验证集 loss 明显低于 bigram","能解释训练集 loss 和验证集 loss 之间差距的含义"]}
+],
+"out":"能生成名字的 MLP 语言模型"},
+
+{"n":5,"seg":"prep","title":"训练动态与手写反向传播","src":"Karpathy makemore 第 3–4 集","hours":"12–15",
+"theory":[
+{"t":"Karpathy：makemore Part 3: Activations & Gradients, BatchNorm","u":"https://youtu.be/P6sfmUTpUmc"},
+{"t":"Karpathy：makemore Part 4: Becoming a Backprop Ninja","u":"https://youtu.be/q8SA3rM6ckI"},
+{"t":"（选看）makemore Part 5: Building a WaveNet","u":"https://youtu.be/t3YJ5hKiMQ0"}
+],
+"tasks":[
+{"t":"激活值、梯度与 BatchNorm","goal":"看懂训练为什么会不稳定，以及初始化和归一化如何解决它。","steps":["在上周的 MLP 上观察：初始 loss 偏高、tanh 大量饱和","修正输出层初始化，让初始 loss 接近 -ln(1/27)","用 Kaiming 初始化缩放隐藏层权重","加入 BatchNorm，理解训练模式与推理模式（running mean / var）的区别","画出各层激活值和梯度的直方图，对比修改前后"],"done":["能解释初始 loss 为什么应约为 3.3","修正后训练曲线开头不再有陡降"]},
+{"t":"不用 autograd 手写反向传播","goal":"弄清每一步反向传播算什么、需要哪些前向结果。","steps":["对网络 embedding → linear → BatchNorm → tanh → linear → cross-entropy，逐步手写每个中间张量的梯度","每算出一个梯度，就和 autograd 的结果比对","把 cross-entropy 的反向化简成一个式子：softmax 概率减去 one-hot","把 BatchNorm 的反向化简成一个融合公式","列一张表：每一步反向需要保存哪些前向张量"],"done":["所有中间梯度与 autograd 一致","这张表能说明训练时的激活显存从哪里来"],"hint":"这张表第 15 周讲激活重计算时会再用到。"}
+],
+"out":"对反向传播计算量和激活显存的直观理解"},
+
+{"n":6,"seg":"prep","title":"Transformer：从注意力到 GPT","src":"Karpathy Let's build GPT","hours":"12–15",
+"theory":[
+{"t":"3Blue1Brown：Transformer 与注意力（神经网络系列后几章）","u":"https://www.3blue1brown.com/topics/neural-networks"},
+{"t":"The Illustrated Transformer","u":"https://jalammar.github.io/illustrated-transformer/"},
+{"t":"论文：Attention Is All You Need","u":"https://arxiv.org/abs/1706.03762"},
+{"t":"《动手学深度学习》第 10 章 注意力机制","u":"https://zh.d2l.ai/chapter_attention-mechanisms/index.html","d":"中文"},
+{"t":"Karpathy：Let's build GPT: from scratch","u":"https://www.youtube.com/watch?v=kCc8FmEb1nY"}
+],
+"tasks":[
+{"t":"从零写字符级 GPT","goal":"亲手搭出一个 decoder-only Transformer 并训练它。","steps":["下载 tiny shakespeare（约 1MB 文本），做字符级编码和 90/10 的训练、验证划分","先写 bigram 基线，搭好训练和采样框架","实现单头自注意力：Q、K、V 投影，缩放点积，下三角因果掩码，softmax","扩展为多头注意力，加上前馈层、残差连接和 LayerNorm（pre-norm），组成 block","堆叠多个 block，加入位置嵌入和 dropout，训练并采样生成文本","每加一个部件，就记录一次验证集 loss"],"done":["生成的文本有莎士比亚剧本的格式和词汇","能画出一个 block 内张量形状 (B, T, C) 的变化，并讲清因果掩码的作用"],"hint":"先用很小的配置（2 层、64 维）在 CPU 上调通，再放大。"}
+],
+"out":"字符级 GPT"},
+
+{"n":7,"seg":"prep","title":"Tokenizer：从零写 BPE","src":"Karpathy Let's build the GPT Tokenizer","hours":"10–12",
+"theory":[
+{"t":"Karpathy：Let's build the GPT Tokenizer","u":"https://youtu.be/zduSFxRajkE"},
+{"t":"minbpe 仓库（含练习说明）","u":"https://github.com/karpathy/minbpe"}
+],
+"tasks":[
+{"t":"实现字节级 BPE tokenizer","goal":"理解大模型如何把文本切成 token，为第 9 周的正式版打基础。","steps":["理解 Unicode 码点和 UTF-8 编码，把文本转成字节序列（0–255）","统计相邻字节对的频次，把最频繁的一对合并成新 token 并记录合并规则，重复到目标词表大小","实现 encode：按学到的合并顺序把字节序列压缩成 token","实现 decode：把 token 还原为字节，再解码为文本","加入 GPT-2 风格的正则预切分：先把文本切成词块，再在块内做 BPE","支持特殊 token（例如 <|endoftext|>），它不参与合并","在几 MB 的文本上训练一个约 1000 的词表"],"done":["任意文本都满足 decode(encode(x)) == x","能解释为什么需要预切分"]}
+],
+"out":"自己写的 BPE（第 9 周会写正式版）"},
+
+{"n":8,"seg":"prep","title":"预览训练优化 + 租卡实操","src":"Karpathy Let's reproduce GPT-2","hours":"12–15","gpu":"按小时租一张云 GPU",
+"theory":[
+{"t":"Karpathy：Let's reproduce GPT-2 (124M)","u":"https://www.youtube.com/watch?v=l8pRSuU81PU"},
+{"t":"配套代码 build-nanogpt","u":"https://github.com/karpathy/build-nanogpt"}
+],
+"tasks":[
+{"t":"租一张云 GPU 并跑通环境","goal":"熟悉后面会反复用到的租卡流程。","steps":["在任一按小时计费的云 GPU 平台租一张卡（国内外平台都可以）","ssh 登录，用 nvidia-smi 查看型号、显存、驱动和 CUDA 版本","用 uv 安装 PyTorch，确认 torch.cuda.is_available() 为 True","在 tmux 中启动训练，断开后再连回查看","用完立即关机或释放实例，查看账单确认计费已停止"],"done":["能在 15 分钟内从零开一台机器并跑起训练","查到自己所用显卡的 BF16 峰值算力和显存带宽（官方规格）"]},
+{"t":"缩小版 GPT-2 训练与优化清单","goal":"先用一遍主流训练优化并记下效果，后面再亲手实现它们。","steps":["跟着视频写出 GPT-2 124M 结构（显存不够就减少层数）","用小数据集在单卡上训练，记录基线吞吐 tokens/s","依次打开：TF32 / BF16 混合精度、torch.compile、F.scaled_dot_product_attention（FlashAttention）、词表补齐到 2 的幂、fused AdamW","每打开一项，在 perf-log.md 记一行吞吐和显存","在 notes/ 写一份清单：每项优化为什么能加速，以及主线第 13–19 周会在哪里亲手实现它"],"done":["perf-log.md 中至少有 5 行对比数据","清单完成"]}
+],
+"gate":["能 ssh 到远程机器，用 tmux 挂训练任务，用 git 提交代码","不看资料写出完整的 PyTorch 训练循环（数据加载、前向、loss、反向、更新、保存 checkpoint）","讲清注意力中 (B, T, C) 的形状变化和因果掩码的作用","讲清 BPE 是怎样一步步合并出词表的"],
+"out":"第一批性能日志 + 优化清单",
+"bridge":"这些优化你已经会用了，可它们内部是怎么工作的？主线会逐个拆开。"},
+
+{"n":9,"seg":"train","title":"正式版 tokenizer + 资源估算","src":"CS336 第 1–2 讲 · 作业 1","hours":"12–15",
+"theory":[
+{"t":"CS336 第 1 讲：课程概览与分词","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"CS336 第 2 讲：PyTorch 与资源估算（FLOPs、显存、算术强度）","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"CS336 课程主页","u":"https://cs336.stanford.edu/"},
+{"t":"CS336 作业 1 仓库与 handout","u":"https://github.com/stanford-cs336/assignment1-basics"}
+],
+"tasks":[
+{"t":"[作业 1] 能在大语料上训练的 BPE","goal":"把第 7 周的 BPE 写成能在几 GB 语料上训练的版本。","steps":["clone 作业 1 仓库，按 README 用 uv 装环境，下载 TinyStories 数据","实现 BPE 训练：GPT-2 正则预切分、特殊 token 不参与合并、统计字节对并迭代合并","提速一：预切分用多进程并行处理文件的不同分块（在特殊 token 处切块）","提速二：合并时只增量更新受影响的字节对计数，不要每轮全量重算","实现 Tokenizer 类：encode、decode，以及对大文件逐行流式处理的 encode_iterable","在 TinyStories 上训练 1 万的词表，记录耗时、峰值内存和最长的 token"],"done":["仓库测试中 tokenizer 相关部分通过","耗时和内存记入笔记"],"hint":"先用 cProfile 找出最慢的函数再优化。"},
+{"t":"手算模型的资源账","goal":"建立贯穿全程的「算账」能力。","steps":["以 GPT-2 small 规模为例（12 层，d_model 768，词表约 5 万，上下文 1024）","分别算出 embedding、注意力、前馈层的参数量，再求总和","算一次前向中所有矩阵乘的 FLOPs（每次乘加记 2 FLOPs）","训练一步约等于前向的 3 倍，推出训练总 FLOPs ≈ 6 × 参数量 × token 数","算 AdamW 训练的显存：参数、梯度、两份优化器状态，再估算激活","写进 notes/accounting.md"],"done":["参数量与 sum(p.numel() for p in model.parameters()) 一致","能解释 6ND 公式的来历"]}
+],
+"out":"tokenizer 通过测试 + 资源估算笔记"},
+
+{"n":10,"seg":"train","title":"从零实现 Transformer 组件","src":"CS336 第 3 讲 · 作业 1","hours":"12–15",
+"theory":[
+{"t":"CS336 第 3 讲：模型结构与超参数","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"}
+],
+"tasks":[
+{"t":"[作业 1] 从零实现 Transformer LM","goal":"不用现成的层，从参数开始写出一个现代 Transformer。","steps":["用 nn.Parameter 实现无偏置的 Linear（截断正态初始化）和 Embedding","实现 RMSNorm：计算时先转成 float32，最后转回原 dtype","实现 SwiGLU 前馈层","实现 RoPE 旋转位置编码，预先计算并缓存 cos、sin","实现数值稳定的 softmax（减去最大值）和支持掩码的缩放点积注意力","实现带因果掩码和 RoPE 的多头自注意力","组装 pre-norm Transformer block 和完整的 Transformer LM，通过 adapters.py 接上测试"],"done":["组件相关测试全部通过"],"hint":"einops 能让形状变换更清楚，不容易写错。"}
+],
+"out":"完整的 Transformer LM"},
+
+{"n":11,"seg":"train","title":"训练基础设施 + 性能基线","src":"CS336 第 4 讲（选看）· 作业 1","hours":"12–15",
+"theory":[
+{"t":"CS336 第 4 讲：注意力变体与 MoE（选看）","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"}
+],
+"tasks":[
+{"t":"[作业 1] 训练所需的全部部件","goal":"写出一个完整、可复现的训练脚本。","steps":["数值稳定的交叉熵","手写 AdamW：一阶、二阶矩，偏差修正，解耦权重衰减","带 warmup 的余弦学习率调度","按全局 L2 范数做梯度裁剪","数据加载：用 np.memmap 打开 tokenize 好的大数组，随机采样 batch","checkpoint：保存和恢复模型、优化器和迭代步数","训练脚本：命令行配置超参，定期评估验证集 loss，记录日志","解码：带温度和 top-p 的采样生成"],"done":["相关测试通过","在 TinyStories 上训出能写通顺小故事的模型"]},
+{"t":"建立主线性能基线","goal":"之后的每项优化都和这条基线比较。","steps":["记录训练吞吐 tokens/s 和峰值显存（torch.cuda.max_memory_allocated）","用第 9 周的公式算出每步 FLOPs，除以每步耗时，得到实际 FLOP/s","再除以 GPU 的 BF16 理论峰值，得到 MFU","把手算的显存和实测对比，解释差异"],"done":["perf-log.md 写入主线第一条记录","手算与实测相差在 20% 以内"]}
+],
+"out":"会讲故事的小模型 + 主线性能基线"},
+
+{"n":12,"seg":"train","title":"实验与消融，冻结基线","src":"CS336 作业 1","hours":"10–12",
+"theory":[
+{"t":"CS336 作业 1 handout 的实验部分","u":"https://github.com/stanford-cs336/assignment1-basics"}
+],
+"tasks":[
+{"t":"[作业 1] 实验与消融","goal":"学会用实验回答「这个设计为什么存在」。","steps":["学习率扫描：找到最佳值和开始发散的边界","改变 batch size，观察对效果和吞吐的影响","消融：去掉 RMSNorm、改成 post-norm、去掉 RoPE、把 SwiGLU 换成参数量相当的 SiLU 前馈","在 OpenWebText 子集上训练，与 TinyStories 对比","每个实验画 loss 曲线并写一句结论"],"done":["每个实验都有曲线和结论","打 git tag v0-baseline，作为整个计划的基线"]}
+],
+"out":"tag v0-baseline"},
+
+{"n":12.5,"k":"w12x","opt":true,"seg":"train","title":"（可选 +2 周）手写深度学习框架","src":"CMU 11-868 作业 2 · miniTorch","hours":"10–15，共 2 周",
+"theory":[
+{"t":"CMU 11-868 第 3 周：深度学习框架与自动微分（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"CMU 11-868 作业页","u":"https://llmsystem.github.io/llmsystemhomework/"},
+{"t":"另一个选择：CMU 10-414/714 Deep Learning Systems（Needle 框架）","u":"https://dlsyscourse.org/","d":"在线评测已关闭，只能用本地测试"}
+],
+"tasks":[
+{"t":"实现一个迷你张量框架","goal":"弄懂 PyTorch 这类框架内部怎么存张量、怎么调度运算、怎么做自动微分。","steps":["张量存储：一维 buffer + shape + strides，实现索引，以及不复制数据的转置","实现广播规则","实现 map、zip、reduce 三类基础运算，在其上构建常用算子","实现自动微分：记录计算历史，拓扑排序后按链式法则反向传播","用自己的框架训练一个小网络，与 PyTorch 对比结果"],"done":["作业自带的测试通过","能解释 stride 如何让 transpose、view 不复制数据"]}
+],
+"out":"迷你框架"},
+
+{"n":13,"seg":"train","title":"GPU 硬件、profiling 与 roofline","src":"CS336 第 5 讲 · 作业 2 §2","hours":"12–15","gpu":"单卡；先在 CPU 上调通正确性",
+"theory":[
+{"t":"CS336 第 5 讲：GPU 与 TPU","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"CS336 作业 2 仓库与 handout","u":"https://github.com/stanford-cs336/assignment2-systems"},
+{"t":"How to Scale Your Model（roofline 章节）","u":"https://jax-ml.github.io/scaling-book/"},
+{"t":"ZOMI AISystem：AI 芯片与 GPU 架构","u":"https://github.com/Infrasys-AI/AISystem","d":"中文，配 B 站视频"}
+],
+"tasks":[
+{"t":"[作业 2 §2] 基准测试与 profiling","goal":"会测量，才能知道时间和显存花在哪里。","steps":["clone 作业 2 仓库，接上作业 1 的模型","写端到端 benchmark：先预热几步，再计时前向、反向；每次计时前后调用 torch.cuda.synchronize()","对不同模型规模做一张耗时表","用 Nsight Systems（nsys profile）抓一次训练步，用 NVTX 标注前向、反向、优化器阶段，找出最耗时的 kernel","开启 BF16 混合精度（torch.autocast），对比速度和 loss","用 PyTorch 显存快照画出显存时间线，找出峰值出现在哪里"],"done":["一张「模型规模 × 前向 / 反向耗时」表","能指出最耗时的三类 kernel"]},
+{"t":"画出模型的 roofline","goal":"判断每个算子受限于算力还是访存。","steps":["查出你的 GPU 的 BF16 Tensor Core 峰值算力和 HBM 带宽，算出拐点（FLOPs / 字节）","分别估算矩阵乘、softmax、RMSNorm、逐元素激活的算术强度","把它们画到 roofline 图上","用 profiler 的实测时间验证你的判断"],"done":["一张 roofline 图","说清哪些算子受限于访存，以及原因"]}
+],
+"out":"profiling 报告 + roofline 图"},
+
+{"n":14,"seg":"train","title":"CUDA 入门：逐步优化 GEMM","src":"11-868 GPU 编程课件 · Simon Boehm","hours":"12–15","gpu":"单卡，需要 CUDA 编译器 nvcc",
+"theory":[
+{"t":"CMU 11-868 第 1–2 周：GPU 编程基础（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"How to Optimize a CUDA Matmul Kernel（Simon Boehm）","u":"https://siboehm.com/articles/22/CUDA-MMM"},
+{"t":"配套代码 SGEMM_CUDA","u":"https://github.com/siboehm/SGEMM_CUDA"},
+{"t":"参考书：Programming Massively Parallel Processors（前 6 章）","d":"纸质书或电子书"}
+],
+"tasks":[
+{"t":"CUDA 编程基础","goal":"会写、会启动、会调试一个 CUDA kernel。","steps":["理解 grid、block、thread 三级结构和线程全局索引的计算","写向量加法：cudaMalloc、cudaMemcpy、启动 kernel、检查错误","写行 softmax：每行一个 block，用 shared memory 做归约，求最大值和求和","用 Nsight Compute（ncu）查看 kernel 耗时和访存吞吐"],"done":["结果与 PyTorch 一致"]},
+{"t":"逐步优化 GEMM","goal":"体会访存合并、分块和寄存器复用带来的数量级差距。","steps":["朴素版：每个线程计算一个输出元素","合并访存版：调整线程到数据的映射，让相邻线程读相邻地址","shared memory 分块版","一维、二维 block tiling：每个线程计算多个输出，复用寄存器","（选做）向量化访存、Tensor Core（WMMA）","每一版都对 4096×4096 的 FP32 矩阵测 GFLOP/s，与 torch.matmul（cuBLAS）对比"],"done":["一张各版本 GFLOP/s 对比表","最好的版本达到 cuBLAS 的 70% 以上（50% 算及格）"]}
+],
+"out":"GEMM 各版本性能对比表"},
+
+{"n":15,"seg":"train","title":"Triton 与单卡显存优化","src":"CS336 第 6 讲 · 作业 2 §3","hours":"12–15",
+"theory":[
+{"t":"CS336 第 6 讲：算子与 Triton","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"Triton 官方教程","u":"https://triton-lang.org/main/getting-started/tutorials/index.html"}
+],
+"tasks":[
+{"t":"Triton 入门 + 读编译器生成的代码","goal":"掌握块级 GPU 编程，并看懂 torch.compile 做了什么。","steps":["跟官方教程实现 vector add、fused softmax、matrix multiplication","理解 program_id、块内偏移、mask 和 autotune","写一个 Triton 版 RMSNorm 前向，和 PyTorch 版对比速度","用 torch.compile 编译模型中的 RMSNorm，设置环境变量 TORCH_LOGS=output_code 查看生成的 Triton 代码，和自己写的对比"],"done":["自写 RMSNorm 比未编译的 PyTorch 版快","能指出编译器生成的代码融合了哪些操作"]},
+{"t":"[作业 2 §3] 单卡显存优化","goal":"理解激活显存的来源，学会用算力换显存。","steps":["分析 autograd 为反向保存了哪些中间张量，哪些可以通过算子融合省掉","用 torch.utils.checkpoint 实现激活重计算","测量重计算前后的显存和速度","在固定显存下，比较能跑的最大 batch size 和上下文长度"],"done":["一张显存与速度的取舍表，记入 perf-log"],"hint":"第 5 周那张「反向要保存哪些张量」的表这里正好用上。"}
+],
+"out":"Triton RMSNorm + 显存优化对比"},
+
+{"n":16,"seg":"train","title":"FlashAttention-2：前向","src":"作业 2 §4","hours":"12–15",
+"theory":[
+{"t":"论文：FlashAttention","u":"https://arxiv.org/abs/2205.14135"},
+{"t":"论文：FlashAttention-2","u":"https://arxiv.org/abs/2307.08691"},
+{"t":"CS336 作业 2 handout §4","u":"https://github.com/stanford-cs336/assignment2-systems"}
+],
+"tasks":[
+{"t":"[作业 2 §4] 注意力基准与 FA2 前向","goal":"实现一个分块计算、不保存整张注意力矩阵的注意力 kernel。","steps":["测朴素 PyTorch 注意力在不同序列长度和 head 维度下的耗时和显存，找到 OOM 的位置","用 torch.compile 编译注意力再测一遍","弄懂 online softmax：分块计算时维护每行的最大值 m 和归一化因子 l，最后统一缩放","先用纯 PyTorch 写分块版 FA2 前向，方便调试","再用 Triton 写 kernel：每个 program 负责一个 Q 块，循环加载 K、V 块，支持因果掩码","输出注意力结果，同时保存每行的 logsumexp 供反向使用"],"done":["与朴素注意力的输出在容差内一致","长序列下显存不再随 T² 增长"]}
+],
+"out":"FA2 前向 + 速度 / 显存对比"},
+
+{"n":17,"seg":"train","title":"FlashAttention-2：反向并接入模型","src":"作业 2 §4","hours":"12–15",
+"theory":[
+{"t":"FlashAttention-2 论文中的反向推导","u":"https://arxiv.org/abs/2307.08691"}
+],
+"tasks":[
+{"t":"[作业 2 §4] FA2 反向 + 端到端接入","goal":"让自己写的注意力真正用在训练里。","steps":["推导注意力的反向：dV、dP、dS、dQ、dK","利用保存的 logsumexp 重新计算 P，避免存储整张注意力矩阵","先用 PyTorch（可加 torch.compile）实现反向","（选做）用 Triton 写反向 kernel","用 torch.autograd.Function 包装前向和反向，与朴素实现比对梯度","替换进自己的 Transformer，端到端训练，对比吞吐和显存"],"done":["梯度与朴素实现一致","perf-log 记录端到端提速"]}
+],
+"out":"用上自写 FlashAttention 的训练"},
+
+{"n":18,"seg":"train","title":"集合通信与手写 DDP","src":"CS336 第 7 讲 · 作业 2 §5","hours":"12–15","gpu":"需要 2–4 张卡；正确性可先用 CPU 的 gloo 后端验证",
+"theory":[
+{"t":"CS336 第 7 讲：并行（上）","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"Ultra-Scale Playbook：数据并行部分","u":"https://huggingface.co/spaces/nanotron/ultrascale-playbook"}
+],
+"tasks":[
+{"t":"集合通信基准","goal":"用数据认识通信的代价。","steps":["用 torchrun 或 mp.spawn 起多个进程，分别用 gloo（CPU）和 NCCL（GPU）后端","测 all-reduce 在不同数据量和进程数下的耗时，算出有效带宽","用 α-β 模型拟合：耗时 = 延迟 α + 数据量 / 带宽","解释小消息和大消息的差别"],"done":["一条带宽随数据量变化的曲线"]},
+{"t":"[作业 2 §5] 手写 DDP","goal":"从最朴素的版本一步步做到计算与通信重叠。","steps":["朴素版：反向结束后，对每个参数的梯度单独 all-reduce 并取平均","验证与单卡训练的结果一致（相同的全局 batch 和初始化）","改进一：把所有梯度展平拼接，一次 all-reduce，减少通信调用次数","改进二：用 register_post_accumulate_grad_hook，在每个参数的梯度就绪时立即发起异步 all-reduce，与剩余的反向计算重叠","（进阶）按大小把参数分桶通信","对比各版本每一步的耗时和通信占比"],"done":["各版本结果都与单卡一致","一张各版本耗时对比表"]}
+],
+"out":"手写 DDP + 通信基准"},
+
+{"n":19,"seg":"train","title":"优化器分片、FSDP 与并行策略","src":"CS336 第 8 讲 · 作业 2 §6–8","hours":"12–15","gpu":"2–4 张卡",
+"theory":[
+{"t":"CS336 第 8 讲：并行（下）","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"Ultra-Scale Playbook：ZeRO 部分","u":"https://huggingface.co/spaces/nanotron/ultrascale-playbook"},
+{"t":"论文：ZeRO","u":"https://arxiv.org/abs/1910.02054"}
+],
+"tasks":[
+{"t":"[作业 2 §6] 优化器状态分片","goal":"实现 ZeRO-1，体会分片如何省显存。","steps":["每个 rank 只为自己负责的那部分参数保存 AdamW 状态并执行更新","更新后把参数同步给其他 rank","测量每张卡的显存下降比例，与理论值比较"],"done":["训练结果与 DDP 一致","显存对比数据"]},
+{"t":"[作业 2 §7–8] FSDP 与并行策略分析","goal":"理解全分片的代价，并能为给定场景选择并行方案。","steps":["实现或使用 FSDP：参数、梯度、优化器状态全部分片","弄清前向前 all-gather 参数、反向后 reduce-scatter 梯度的流程，以及它和 ZeRO-3 的对应关系","为数据并行、FSDP、张量并行、FSDP + 张量并行分别写出每一步的通信量公式","判断在不同模型规模、卡数和带宽下哪种方案更优"],"done":["显存和吞吐对比","一份书面的并行策略分析"]}
+],
+"out":"分片训练 + 并行策略分析"},
+
+{"n":20,"seg":"train","title":"张量并行与流水线并行","src":"picotron · Playbook · 11-868 第 10 周","hours":"12–15","gpu":"2–4 张卡",
+"theory":[
+{"t":"Ultra-Scale Playbook：张量并行与流水线并行部分","u":"https://huggingface.co/spaces/nanotron/ultrascale-playbook"},
+{"t":"CMU 11-868 第 10 周：GPipe、Megatron-LM（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"picotron（最小的 4D 并行训练框架）","u":"https://github.com/huggingface/picotron"},
+{"t":"picotron 逐步教程视频","u":"https://www.youtube.com/playlist?list=PL-_armZiJvAnhcRr6yTJ0__f3Oi-LLi9S"},
+{"t":"ZOMI AIInfra 04 大模型训练（并行章节）","u":"https://github.com/Infrasys-AI/AIInfra","d":"中文，配 B 站视频"}
+],
+"tasks":[
+{"t":"Megatron 式张量并行","goal":"在层内切分模型，并把通信降到每个块一次。","steps":["MLP：第一层按列切，第二层按行切，只在块末尾做一次 all-reduce","注意力：按 head 切分 Q、K、V，输出投影按行切","与单卡输出比对","测量 2 卡、4 卡下的吞吐和通信占比"],"done":["输出与单卡一致"]},
+{"t":"流水线并行","goal":"实现 1F1B 调度并量化 bubble。","steps":["把模型层切成 2–4 段放到不同 rank，用 send / recv 传递激活和梯度","先实现 GPipe：所有 micro-batch 先做完前向，再做反向","再实现 1F1B 调度","计算并实测 bubble 比例随 micro-batch 数量的变化","画出 1 → N 卡的扩展效率曲线"],"done":["扩展效率曲线 + bubble 分析"]}
+],
+"out":"1 → N 卡扩展效率曲线"},
+
+{"n":21,"seg":"train","title":"缓冲周：第一段复盘","src":"补完 + 复盘","hours":"按需",
+"theory":[],
+"tasks":[
+{"t":"第一段复盘报告","goal":"把 13 周的工作沉淀成一份可以展示的报告。","steps":["补完没做完的任务","根据 perf-log 画出从 v0-baseline 到现在的吞吐、显存、MFU 变化","每项优化写一句它为什么有效","写下你预期推理阶段会遇到哪些不同的瓶颈"],"done":["notes/segment1-report.md 完成","打 git tag v1-training"]}
+],
+"out":"第一段报告",
+"bridge":"为什么推理时 decode 阶段的瓶颈和训练完全不同？"},
+
+{"n":22,"seg":"infer","title":"KV cache 与 prefill / decode","src":"CS336 第 10 讲","hours":"12–15",
+"theory":[
+{"t":"CS336 第 10 讲：推理","u":"https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"},
+{"t":"CMU 11-868 第 5 周：生成与投机解码（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"}
+],
+"tasks":[
+{"t":"KV cache 与 decode 瓶颈分析","goal":"用数据证明 decode 受限于访存。","steps":["给自己的模型写 generate：先写无缓存版本（每一步重算整个序列）","加 KV cache：prefill 一次处理整个 prompt 并填充缓存，decode 每步只计算新 token 并追加 K、V","分别测 prefill 和 decode 的吞吐","算出 decode 一步的 FLOPs 和需要读取的字节数（权重 + KV cache），得出算术强度，对照第 13 周的 roofline","测 batch size 从 1 到 64 时 decode 的吞吐和每 token 延迟"],"done":["数据证明 decode 受限于访存","一条 batch size 与吞吐 / 延迟的曲线"]}
+],
+"out":"带 KV cache 的推理 + 瓶颈分析"},
+
+{"n":23,"seg":"infer","title":"从静态 batching 到 continuous batching","src":"Orca · 11-868 第 13 周","hours":"12–15",
+"theory":[
+{"t":"论文：Orca（迭代级调度）","u":"https://www.usenix.org/conference/osdi22/presentation/yu"},
+{"t":"CMU 11-868 第 13 周：LLM serving（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"nano-vllm（约千行的 vLLM 最小实现，作参考）","u":"https://github.com/GeeeekExplorer/nano-vllm"}
+],
+"tasks":[
+{"t":"continuous batching 调度器","goal":"让 GPU 不再等最慢的那个请求。","steps":["读 nano-vllm 的整体结构（引擎、调度器、模型执行、采样）作参考，但给自己的模型实现","静态 batching：一批请求左填充后一起生成，测量短请求等待长请求造成的浪费","continuous batching：每个 decode 步结束后移出已完成的请求，从等待队列补入新请求","用一组长度随机的请求，对比逐条生成、静态 batching、continuous batching 的吞吐"],"done":["三种方式的吞吐对比表","能解释迭代级调度为什么能提高 GPU 利用率"]}
+],
+"out":"continuous batching 调度器"},
+
+{"n":24,"seg":"infer","title":"PagedAttention：分页管理 KV cache","src":"vLLM 论文 · 11-868 第 14 周","hours":"12–15",
+"theory":[
+{"t":"论文：vLLM / PagedAttention","u":"https://arxiv.org/abs/2309.06180"},
+{"t":"CMU 11-868 第 14 周：PagedAttention 与 vLLM（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"}
+],
+"tasks":[
+{"t":"block 管理器与分页注意力","goal":"解决 KV cache 的碎片问题，提高并发数。","steps":["先观察：按最大长度连续预分配 KV cache 会浪费多少显存","实现 block 管理器：把 KV cache 切成固定大小的块（如 16 个 token），每个请求维护一张逻辑块到物理块的块表","实现分配、释放，以及显存不足时的抢占（重算或换出）","修改注意力，按块表读取 K、V（先用 PyTorch 索引实现，选做 Triton kernel）","测量同样显存下可以同时服务的请求数"],"done":["输出与不分页的版本一致","最大并发数的前后对比"]}
+],
+"out":"分页 KV cache"},
+
+{"n":25,"seg":"infer","title":"权重量化","src":"11-868 第 11–12 周","hours":"12–15",
+"theory":[
+{"t":"CMU 11-868 第 11–12 周：量化 I、II（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"论文：GPTQ","u":"https://arxiv.org/abs/2210.17323"},
+{"t":"论文：AWQ","u":"https://arxiv.org/abs/2306.00978"},
+{"t":"ZOMI AIInfra 05 大模型推理（量化章节）","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"}
+],
+"tasks":[
+{"t":"INT8 / INT4 权重量化推理","goal":"用更少的字节读权重，直接缓解 decode 的访存瓶颈。","steps":["实现按通道的对称 INT8 权重量化与反量化","写一个 Triton kernel：读取 INT8 权重，在寄存器中反量化后做矩阵乘，激活保持 BF16","扩展到 INT4：两个值打包进一个字节，按组量化（组大小 128）","测量验证集 loss、decode 速度和显存","（选读）弄懂 GPTQ、AWQ 为什么比直接四舍五入更准"],"done":["一张精度 / 速度 / 显存对比表"],"hint":"第 14–15 周写 GEMM 和 Triton 的经验在这里直接复用。"}
+],
+"out":"量化推理"},
+
+{"n":26,"seg":"infer","title":"投机解码","src":"11-868 第 5 周","hours":"10–12",
+"theory":[
+{"t":"CMU 11-868 第 5 周：生成与投机解码（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"论文：Fast Inference from Transformers via Speculative Decoding","u":"https://arxiv.org/abs/2211.17192"}
+],
+"tasks":[
+{"t":"用自己训的小模型做投机解码","goal":"用小模型猜、大模型并行验证，降低延迟。","steps":["用第 11 周的训练代码训一个更小的 draft 模型（同一个 tokenizer、同一份数据）","实现投机解码：draft 模型连续猜 k 个 token，目标模型一次前向并行验证，按接受-拒绝采样规则决定保留几个","验证正确性：温度为 0 时，输出与只用目标模型完全相同","测量接受率和加速比随 k 的变化"],"done":["温度为 0 时输出一致","一条 k 与加速比的曲线"]}
+],
+"out":"投机解码 + 加速比"},
+
+{"n":27,"seg":"infer","title":"推理服务化与压测","src":"SGLang · 11-868 第 13 周","hours":"12–15",
+"theory":[
+{"t":"论文：SGLang（RadixAttention 前缀缓存）","u":"https://arxiv.org/abs/2312.07104"},
+{"t":"CMU 11-868 第 13 周：LLM serving with SGLang（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"}
+],
+"tasks":[
+{"t":"OpenAI 兼容服务 + 压测","goal":"把引擎变成能被真实流量调用的服务，并用指标衡量它。","steps":["用 FastAPI 实现兼容 OpenAI 的 /v1/completions 和 /v1/chat/completions，支持流式输出（SSE）","引擎在独立循环中运行，请求通过异步队列进出","前缀缓存：对 prompt 前缀对应的 KV 块做哈希复用","chunked prefill：把长 prompt 分块，与 decode 混合调度","写压测脚本：按泊松到达率发送请求，统计 TTFT、TPOT、吞吐和 P50 / P99","画出 QPS-延迟曲线"],"done":["能用 OpenAI 官方 SDK 调用你的服务","一份压测报告"]}
+],
+"out":"OpenAI 兼容服务 + 压测报告"},
+
+{"n":28,"seg":"infer","title":"对标 vLLM，理解 PD 分离","src":"DistServe · 11-868 第 15 周","hours":"12–15",
+"theory":[
+{"t":"论文：DistServe（prefill / decode 分离）","u":"https://arxiv.org/abs/2401.09670"},
+{"t":"CMU 11-868 第 15 周：DistServe、KV cache（课件）","u":"https://llmsystem.github.io/llmsystem2026spring/docs/Syllabus"},
+{"t":"vLLM 文档","u":"https://docs.vllm.ai/"},
+{"t":"Qwen3-0.6B（同量级参照模型）","u":"https://huggingface.co/Qwen/Qwen3-0.6B"}
+],
+"tasks":[
+{"t":"与 vLLM 对比并分析差距","goal":"找到自己的实现和工业系统差在哪里。","steps":["用 vLLM 部署一个参数量相近的开源模型（如 Qwen3-0.6B），用同一套压测脚本测试","精读 vLLM 调度器：请求状态流转、抢占策略、chunked prefill","对比你的实现，逐项找差距来源：kernel、调度、CUDA Graph、采样等","读 DistServe，写出 prefill / decode 分离部署在什么负载下有收益"],"done":["一份差距分析报告"]}
+],
+"out":"差距分析报告"},
+
+{"n":29,"seg":"infer","title":"缓冲周：第二段复盘","src":"补完 + 复盘","hours":"按需",
+"theory":[],
+"tasks":[
+{"t":"第二段复盘报告","goal":"把推理部分的工作整理成报告。","steps":["补完没做完的任务","整理推理部分的 perf-log，画出关键指标的变化","写 notes/segment2-report.md"],"done":["报告完成","打 git tag v2-inference"]}
+],
+"out":"第二段报告",
+"bridge":"训练任务和多个推理服务要共用一个集群时，资源该怎么分？"},
+
+{"n":30,"seg":"cluster","title":"AI 集群与网络通信","src":"ZOMI AIInfra 01–02","hours":"10–12","gpu":"短期租一台多卡机器",
+"theory":[
+{"t":"ZOMI AIInfra 01 AI 计算集群","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"ZOMI AIInfra 02 通信与存储：网络、RDMA / RoCE、拓扑","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"ZOMI 酱 B 站视频","u":"https://space.bilibili.com/517221395"},
+{"t":"nccl-tests","u":"https://github.com/NVIDIA/nccl-tests"}
+],
+"tasks":[
+{"t":"实测集群通信","goal":"把通信理论和真实硬件对上。","steps":["租一台多卡机器（最好带 NVLink），用 nvidia-smi topo -m 查看 GPU 互联拓扑","编译 nccl-tests，运行 all_reduce_perf 和 all_gather_perf，记录 algbw 和 busbw","如果能租到 PCIe 互联的机器，对比 NVLink 和 PCIe","用第 18 周的 α-β 模型对照实测结果"],"done":["一张实测带宽与理论值的对比表"]}
+],
+"out":"通信实测报告"},
+
+{"n":31,"seg":"cluster","title":"集合通信与 checkpoint 存储","src":"ZOMI AIInfra 02","hours":"10–12",
+"theory":[
+{"t":"ZOMI AIInfra 02：集合通信、NCCL、checkpoint 存储","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"PyTorch 分布式 checkpoint 文档","u":"https://docs.pytorch.org/docs/stable/distributed.checkpoint.html"}
+],
+"tasks":[
+{"t":"量化 checkpoint 开销","goal":"让保存 checkpoint 不再拖慢训练。","steps":["测量第 19 周分片训练的 checkpoint 保存和加载耗时","改用 torch.distributed.checkpoint，每个 rank 只写自己的分片","尝试异步保存，让训练不中断","计算不同保存间隔下，checkpoint 开销占训练时间的比例"],"done":["一张开销比例表"]}
+],
+"out":"checkpoint 开销分析"},
+
+{"n":32,"seg":"cluster","title":"容器与 Kubernetes 基础","src":"ZOMI AIInfra 03","hours":"10–12","gpu":"本地 kind 集群即可，不需要 GPU",
+"theory":[
+{"t":"ZOMI AIInfra 03 集群容器与云原生：Docker、K8s 基础","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"Kubernetes 官方教程","u":"https://kubernetes.io/zh-cn/docs/tutorials/"},
+{"t":"kind（在本地运行 K8s 集群）","u":"https://kind.sigs.k8s.io/"}
+],
+"tasks":[
+{"t":"容器化并部署到本地 K8s","goal":"让训练和推理都能以容器方式运行。","steps":["为训练脚本和推理服务分别写 Dockerfile（基于 PyTorch 官方镜像，用多阶段构建控制体积）","用 kind 起一个本地集群，熟悉 kubectl get、describe、logs、exec","用 Deployment + Service 部署推理服务（CPU 模式或小模型），配置就绪和存活探针、资源 requests / limits","用 ConfigMap 传配置，从集群外调用服务","滚动更新镜像，观察服务是否中断"],"done":["推理服务在 kind 集群中可以访问","滚动更新时服务不中断"]}
+],
+"out":"运行在 K8s 上的推理服务"},
+
+{"n":33,"seg":"cluster","title":"GPU 调度与分布式训练任务","src":"ZOMI AIInfra 03","hours":"12–15","gpu":"kind 上可以不用 GPU 练调度；验证 GPU 调度需要短期租一个带 GPU 的云 K8s",
+"theory":[
+{"t":"ZOMI AIInfra 03：K8s 调度、AI 云平台","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"Kueue","u":"https://kueue.sigs.k8s.io/"},
+{"t":"Volcano","u":"https://volcano.sh/"},
+{"t":"Kubeflow Trainer","u":"https://www.kubeflow.org/docs/components/trainer/"},
+{"t":"NVIDIA k8s-device-plugin","u":"https://github.com/NVIDIA/k8s-device-plugin"},
+{"t":"KEDA（事件驱动的自动扩缩容）","u":"https://keda.sh/"}
+],
+"tasks":[
+{"t":"调度训练任务，自动扩缩容推理","goal":"让集群自动给训练和推理分配资源。","steps":["了解 device plugin 如何把 nvidia.com/gpu 暴露为可调度资源","安装 Kueue（或 Volcano），配置队列和配额","理解 gang 调度为什么对分布式训练必不可少（避免一部分 worker 拿到资源、其余在等，造成死锁）","安装 Kubeflow Trainer，把第 18–19 周的分布式训练打包提交（kind 上用 CPU + gloo）","用 KEDA 或 HPA，按推理服务的请求队列长度自动扩缩容副本"],"done":["一条命令提交训练任务","压测时推理副本自动扩容"]}
+],
+"out":"可调度的训练与推理"},
+
+{"n":34,"seg":"cluster","title":"监控、故障恢复与全链路","src":"ZOMI AIInfra 03","hours":"12–15",
+"theory":[
+{"t":"ZOMI AIInfra 03：监控","u":"https://infrasys-ai.github.io/aiinfra-docs/","d":"中文"},
+{"t":"dcgm-exporter","u":"https://github.com/NVIDIA/dcgm-exporter"},
+{"t":"Prometheus 入门","u":"https://prometheus.io/docs/introduction/overview/"},
+{"t":"Grafana 文档","u":"https://grafana.com/docs/grafana/latest/"}
+],
+"tasks":[
+{"t":"监控、故障注入和全链路演示","goal":"把训练到上线串成一条可观测、能自动恢复的流水线。","steps":["用 kube-prometheus-stack 部署 Prometheus + Grafana","在 GPU 节点部署 dcgm-exporter，做 GPU 利用率、显存、功耗面板","让推理服务暴露自定义指标：TTFT、队列长度、吞吐","故障注入：训练中删除一个 worker pod，确认任务能从最近的 checkpoint 恢复","串起全链路：提交训练 → 保存 checkpoint → 部署为推理服务 → 监控面板"],"done":["一份全链路演示文档或录屏","恢复过程有日志为证"]}
+],
+"out":"全链路平台"},
+
+{"n":35,"seg":"cap","title":"技术报告与方向选择","src":"整理性能日志","hours":"10–15",
+"theory":[],
+"tasks":[
+{"t":"写完整的技术报告","goal":"用这一路的性能日志讲一个完整的故事。","steps":["以 perf-log 为主线，复盘模型从 v0-baseline 到上线的每一步：改了什么、为什么有效、数据如何","画出关键指标的变化图","写清每一段遇到的瓶颈和你的判断","选定深挖方向（算子与编译 / 分布式训练 / 推理优化 / 平台），列出下一步要读的论文和要做的项目"],"done":["报告发布到博客或仓库 README"]}
+],
+"out":"技术报告"},
+
+{"n":36,"seg":"cap","title":"第一个开源 PR","src":"选一个项目贡献","hours":"10–15",
+"theory":[
+{"t":"vLLM","u":"https://github.com/vllm-project/vllm"},
+{"t":"SGLang","u":"https://github.com/sgl-project/sglang"},
+{"t":"PyTorch","u":"https://github.com/pytorch/pytorch"},
+{"t":"Triton","u":"https://github.com/triton-lang/triton"}
+],
+"tasks":[
+{"t":"提交第一个开源 PR","goal":"把学到的东西贡献回社区。","steps":["在选定方向的项目中找 good first issue、文档错误或缺失的 benchmark","先在 issue 下留言认领","按项目的 CONTRIBUTING 说明配置开发环境，跑通测试","提交一个小而完整的 PR（附测试或数据），根据 review 修改"],"done":["至少提交一个 PR（被合并更好）"]}
+],
+"out":"开源贡献"}
+]
+}
