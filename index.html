@@ -77,6 +77,7 @@ details.wk.opt{border-style:dashed}
 .wk.done .pt{color:var(--ink);font-weight:600}
 .body{padding:0 18px 20px calc(34px + 4.4em);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:8px 32px}
 .body .full{grid-column:1/-1}
+.col section+section{margin-top:14px}
 .h{font:600 14px/1.3 Inter,"Noto Sans SC",sans-serif;color:var(--muted);margin:6px 0 2px}
 .it{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
 .ck{display:grid;place-items:center;width:44px;height:44px;margin:-10px 0 -10px -12px;flex:none;cursor:pointer}
@@ -129,7 +130,7 @@ dialog::backdrop{background:rgba(5,15,30,.5)}
     <div class="head">
       <div>
         <h1>AI Infra 36 周计划</h1>
-        <p class="lede">从 Linux 和 PyTorch 入门，一路做到算子、分布式训练、推理服务和集群平台。每周列出要看的课程和要做的实践；每个实践任务都写成了完整说明，点「复制给 Muse」就能让它带你一步步做。</p>
+        <p class="lede">从 Linux 和 PyTorch 入门，一路做到算子、分布式训练、推理服务和集群平台。每周四步：先读 AIInfraGuide 的中文文章建立直觉，再看课程补深度，然后在同一个模型上动手实践，周末用自测题检查。每个实践任务都写成了完整说明，点「复制给 Muse」就能让它带你一步步做。</p>
       </div>
       <div class="figs" aria-live="polite">
         <div><b id="fCur">1</b><span>当前周</span></div>
@@ -174,7 +175,7 @@ dialog::backdrop{background:rgba(5,15,30,.5)}
         </table>
       </div>
     </div>
-    <p class="note">课程信息按 2025–2026 学年的版本整理，2026 年 11 月核对过链接；各课程每年改版，以官网为准。实践任务的说明是按课程作业要求改写的等效描述，不是原作业文本。</p>
+    <p class="note">课程信息按 2025–2026 学年的版本整理，2026 年 11 月核对过链接；各课程每年改版，以官网为准。实践任务的说明是按课程作业要求改写的等效描述，不是原作业文本。中文阅读来自 AIInfraGuide（caomaolufei/AIInfraGuide），它还在持续更新，标着「提纲」的章节暂时只有大纲；术语或写法与课程不一致时，写代码以课程为准。</p>
     <p class="note" id="saveNote">勾选和笔记会保存到你的账户；无法连接时先保存在当前浏览器。「导出进度」可以把勾选和笔记存成一个文件备份，「导入进度」会把文件里的内容合并进来。</p>
   </div>
 </main>
@@ -195,7 +196,8 @@ let P=null,state={c:{},notes:{}},docRef=null,saving=false,dirty=false,downloads=
 const keyOf=w=>w.k||('w'+w.n);
 const segOf=w=>P.segments.find(s=>s.id===w.seg);
 const label=w=>w.opt?'选':String(w.n);
-function items(w){const k=keyOf(w),a=[];(w.theory||[]).forEach((_,i)=>a.push(k+'-t'+i));(w.tasks||[]).forEach((_,i)=>a.push(k+'-p'+i));(w.gate||[]).forEach((_,i)=>a.push(k+'-g'+i));return a}
+function items(w){const k=keyOf(w),a=[];(w.read||[]).forEach((_,i)=>a.push(k+'-r'+i));(w.theory||[]).forEach((_,i)=>a.push(k+'-t'+i));(w.tasks||[]).forEach((_,i)=>a.push(k+'-p'+i));(w.check||[]).forEach((_,i)=>a.push(k+'-s'+i));(w.gate||[]).forEach((_,i)=>a.push(k+'-g'+i));return a}
+const linkRow=(id,t)=>row(id,t.u&&/^https:\/\//.test(t.u)?`<a href="${esc(t.u)}" target="_blank" rel="noopener">${esc(t.t)}</a>`:esc(t.t),t.d);
 function setStatus(t){$('#status').textContent=t}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
 function loadLocal(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&s.c)state={c:s.c,notes:s.notes||{}}}catch(e){}}
@@ -211,11 +213,14 @@ function row(id,html,note,cls){return `<div class="it" data-row="${id}"><label c
 function taskHTML(w,t,i){const id=keyOf(w)+'-p'+i;return `<div class="it" data-row="${id}"><label class="ck"><input type="checkbox" id="c-${id}" data-k="${id}"><span class="sr">标记完成</span></label><div class="tx"><div class="tt"><b>${esc(t.t)}</b><button class="mini" type="button" data-copy="${keyOf(w)}|${i}">复制给 Muse</button></div><p class="goal"><span class="lb">目标</span>${esc(t.goal)}</p><ol>${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><p class="dn"><span class="lb">验收</span></p><ul>${(t.done||[]).map(d=>`<li>${esc(d)}</li>`).join('')}</ul>${t.hint?`<p class="hint"><span class="lb">提示</span>${esc(t.hint)}</p>`:''}</div></div>`}
 function weekHTML(w){
   const k=keyOf(w),s=segOf(w);
-  const th=(w.theory||[]).map((t,i)=>row(k+'-t'+i,t.u&&/^https:\/\//.test(t.u)?`<a href="${esc(t.u)}" target="_blank" rel="noopener">${esc(t.t)}</a>`:esc(t.t),t.d)).join('');
+  const rd=(w.read||[]).map((t,i)=>linkRow(k+'-r'+i,t)).join('');
+  const th=(w.theory||[]).map((t,i)=>linkRow(k+'-t'+i,t)).join('');
+  const left=(rd?`<section><p class="h">中文阅读 · 先读（AIInfraGuide）</p>${rd}</section>`:'')+(th?`<section><p class="h">课程 · 再看</p>${th}</section>`:'');
+  const sc=w.check?`<div class="gate"><p class="h">本周自测 · 周末对照检查（来自 AIInfraGuide 的检验标准）</p>${w.check.map((g,i)=>row(k+'-s'+i,esc(g),'','gtx')).join('')}</div>`:'';
   const tk=(w.tasks||[]).map((t,i)=>taskHTML(w,t,i)).join('');
   const gate=w.gate?`<div class="gate"><p class="h">进入主线前自测：四项都能做到就开始第 9 周</p>${w.gate.map((g,i)=>row(k+'-g'+i,esc(g),'','gtx')).join('')}</div>`:'';
   const meta=[w.src,w.hours?('每周约 '+w.hours+' 小时'):''].filter(Boolean).join(' · ');
-  return `<details class="wk${w.opt?' opt':''}" id="${k}" data-seg="${esc(w.seg)}"><summary><div class="wn">${esc(label(w))}<small>${esc(s.short)}</small></div><div><h3 class="wt">${esc(w.title)}<span class="tag" hidden>本周</span></h3><div class="wm">${esc(meta)}</div></div><div class="wp"><span class="pt"></span><span class="meter"><i></i></span></div></summary><div class="body">${th?`<section><p class="h">理论 · 看什么</p>${th}</section>`:''}<section${th?'':' class="full"'}><p class="h">实践 · 做什么</p>${tk}</section><div class="foot">${w.out?`<p><span class="lb">产出</span>${esc(w.out)}</p>`:''}${w.gpu?`<p><span class="lb">算力</span>${esc(w.gpu)}</p>`:''}${gate}${w.bridge?`<p class="bridge"><span class="lb">带着这个问题进入下一段</span>${esc(w.bridge)}</p>`:''}<label class="nl" for="n-${k}">笔记 / 性能记录</label><textarea id="n-${k}" data-note="${k}" rows="3" placeholder="记录本周的数据、卡住的地方和想法"></textarea></div></div></details>`;
+  return `<details class="wk${w.opt?' opt':''}" id="${k}" data-seg="${esc(w.seg)}"><summary><div class="wn">${esc(label(w))}<small>${esc(s.short)}</small></div><div><h3 class="wt">${esc(w.title)}<span class="tag" hidden>本周</span></h3><div class="wm">${esc(meta)}</div></div><div class="wp"><span class="pt"></span><span class="meter"><i></i></span></div></summary><div class="body">${left?`<div class="col">${left}</div>`:''}<section${left?'':' class="full"'}><p class="h">实践 · 做什么</p>${tk}</section><div class="foot">${sc}${w.out?`<p><span class="lb">产出</span>${esc(w.out)}</p>`:''}${w.gpu?`<p><span class="lb">算力</span>${esc(w.gpu)}</p>`:''}${gate}${w.bridge?`<p class="bridge"><span class="lb">带着这个问题进入下一段</span>${esc(w.bridge)}</p>`:''}<label class="nl" for="n-${k}">笔记 / 性能记录</label><textarea id="n-${k}" data-note="${k}" rows="3" placeholder="记录本周的数据、卡住的地方和想法"></textarea></div></div></details>`;
 }
 function render(){
   const S=P.segments,W=P.weeks;
@@ -258,12 +263,14 @@ function goWeek(k){
 function promptFor(w,t){
   const L=[`你是我的 AI Infra 学习教练。我在按一份 36 周的学习计划自学，现在是第 ${w.opt?'12 周之后的可选':w.n} 周「${w.title}」。请带我上手完成下面这个实践任务。`,'','带我的方式：','1. 先问清我的环境（操作系统、有没有 GPU 及型号、Python 和 PyTorch 版本）和我已经做到哪一步。','2. 一次只推进一个步骤：先说明这一步做什么、为什么，再让我自己动手。','3. 我卡住时先给提示和思路，不要直接给完整代码；我写完后帮我检查并指出问题。','4. 全部步骤完成后，按验收标准逐条和我确认。','',`【任务】${t.t}`,`【目标】${t.goal}`,'【步骤】',...t.steps.map((s,i)=>`${i+1}. ${s}`),'【验收标准】',...(t.done||[]).map(d=>`- ${d}`)];
   if(t.hint)L.push(`【提示】${t.hint}`);
-  if(w.theory&&w.theory.length)L.push('【本周参考资料】',...w.theory.map(x=>`- ${x.t}${x.u?'：'+x.u:''}`));
+  if(w.read&&w.read.length)L.push('【本周中文阅读（AIInfraGuide）】',...w.read.map(x=>`- ${x.t}${x.u?'：'+x.u:''}${x.d?'（'+x.d+'）':''}`));
+  if(w.theory&&w.theory.length)L.push('【本周课程】',...w.theory.map(x=>`- ${x.t}${x.u?'：'+x.u:''}`));
+  if(w.check&&w.check.length)L.push('【本周自测】',...w.check.map(x=>`- ${x}`),'完成实践后，请用这些自测题考考我。');
   return L.join('\n');
 }
 function markdown(){
   const L=['# AI Infra 36 周计划',''];
-  P.segments.forEach(s=>{L.push(`## ${s.name}（第 ${s.from}–${s.to} 周）`,'',s.desc,'');P.weeks.filter(w=>w.seg===s.id).forEach(w=>{const k=keyOf(w),c=id=>state.c[id]?'x':' ';L.push(`### ${w.opt?'可选':'第 '+w.n+' 周'} · ${w.title}`,'');if(w.src||w.hours)L.push(`${[w.src,w.hours?'每周约 '+w.hours+' 小时':''].filter(Boolean).join(' · ')}`,'');if(w.theory&&w.theory.length){L.push('**理论**','');w.theory.forEach((t,i)=>L.push(`- [${c(k+'-t'+i)}] ${t.u?`[${t.t}](${t.u})`:t.t}${t.d?`（${t.d}）`:''}`));L.push('')}L.push('**实践**','');w.tasks.forEach((t,i)=>{L.push(`- [${c(k+'-p'+i)}] **${t.t}**`,`  - 目标：${t.goal}`,'  - 步骤：',...t.steps.map((x,j)=>`    ${j+1}. ${x}`),'  - 验收：',...(t.done||[]).map(x=>`    - ${x}`));if(t.hint)L.push(`  - 提示：${t.hint}`)});L.push('');if(w.gate){L.push('**进入主线前自测**','');w.gate.forEach((g,i)=>L.push(`- [${c(k+'-g'+i)}] ${g}`));L.push('')}if(w.out)L.push(`**产出**：${w.out}`,'');if(w.gpu)L.push(`**算力**：${w.gpu}`,'');if(w.bridge)L.push(`**带着这个问题进入下一段**：${w.bridge}`,'');if(state.notes[k])L.push('**我的笔记**','',state.notes[k],'')})});
+  P.segments.forEach(s=>{L.push(`## ${s.name}（第 ${s.from}–${s.to} 周）`,'',s.desc,'');P.weeks.filter(w=>w.seg===s.id).forEach(w=>{const k=keyOf(w),c=id=>state.c[id]?'x':' ';L.push(`### ${w.opt?'可选':'第 '+w.n+' 周'} · ${w.title}`,'');if(w.src||w.hours)L.push(`${[w.src,w.hours?'每周约 '+w.hours+' 小时':''].filter(Boolean).join(' · ')}`,'');if(w.read&&w.read.length){L.push('**中文阅读（AIInfraGuide）**','');w.read.forEach((t,i)=>L.push(`- [${c(k+'-r'+i)}] [${t.t}](${t.u})${t.d?`（${t.d}）`:''}`));L.push('')}if(w.theory&&w.theory.length){L.push('**课程**','');w.theory.forEach((t,i)=>L.push(`- [${c(k+'-t'+i)}] ${t.u?`[${t.t}](${t.u})`:t.t}${t.d?`（${t.d}）`:''}`));L.push('')}L.push('**实践**','');w.tasks.forEach((t,i)=>{L.push(`- [${c(k+'-p'+i)}] **${t.t}**`,`  - 目标：${t.goal}`,'  - 步骤：',...t.steps.map((x,j)=>`    ${j+1}. ${x}`),'  - 验收：',...(t.done||[]).map(x=>`    - ${x}`));if(t.hint)L.push(`  - 提示：${t.hint}`)});L.push('');if(w.check){L.push('**本周自测**','');w.check.forEach((g,i)=>L.push(`- [${c(k+'-s'+i)}] ${g}`));L.push('')}if(w.gate){L.push('**进入主线前自测**','');w.gate.forEach((g,i)=>L.push(`- [${c(k+'-g'+i)}] ${g}`));L.push('')}if(w.out)L.push(`**产出**：${w.out}`,'');if(w.gpu)L.push(`**算力**：${w.gpu}`,'');if(w.bridge)L.push(`**带着这个问题进入下一段**：${w.bridge}`,'');if(state.notes[k])L.push('**我的笔记**','',state.notes[k],'')})});
   return L.join('\n');
 }
 function openDlg(text){const d=$('#dlg');$('#dlgT').value=text;try{d.showModal()}catch(e){d.setAttribute('open','')}const t=$('#dlgT');t.focus();t.select()}
@@ -280,7 +287,7 @@ function importProgress(text){
   let o;try{o=JSON.parse(text)}catch(e){toast('文件不是有效的 JSON');return}
   if(!o||typeof o!=='object'||!o.c||typeof o.c!=='object'){toast('这不是本计划导出的进度文件');return}
   let added=0;
-  Object.keys(o.c).forEach(k=>{if(/^w[0-9x]+-[tpg][0-9]+$/.test(k)&&o.c[k]&&!state.c[k]){state.c[k]=1;added++}});
+  Object.keys(o.c).forEach(k=>{if(/^w[0-9x]+-[rtpsg][0-9]+$/.test(k)&&o.c[k]&&!state.c[k]){state.c[k]=1;added++}});
   const ns=o.notes&&typeof o.notes==='object'?o.notes:{};
   Object.keys(ns).forEach(k=>{const v=ns[k];if(!/^w[0-9x]+$/.test(k)||typeof v!=='string'||!v.trim())return;const mine=state.notes[k]||'';if(!mine.trim())state.notes[k]=v.slice(0,20000);else if(mine!==v&&!mine.includes(v))state.notes[k]=(mine+'\n\n—— 导入的笔记 ——\n'+v).slice(0,40000)});
   applyState();persist();toast(`已导入：新增 ${added} 项勾选，笔记已合并`);
